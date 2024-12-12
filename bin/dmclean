@@ -1,14 +1,31 @@
 #!/bin/bash
 set -e -u -o pipefail
-: "${DMC_UNARCHIVE:=unzip -p}"
-: "${DMC_ENCODING:=UTF-8}"
+: "${DMC_UNARCHIVE:=unzip -p}" Unarchive cmd
+: "${DMC_ENCODING:=UTF-8}" Input encoding
+: "${DMC_QUOTEQUOTE:=}" Whether to fix quotes
+: "${DMC_FIXNULL:=}" Whether to fix null characters
 Main() {
 	# This is not memory nor CPU efficient
 	# iconv will load the ENTIRE file into memory during conversion
 	# and sed will churn hard on files that don't need to be updated
 	# It's also ONLY needed ONCE per load of a file
+	SedArgs 1>&2
 	${DMC_UNARCHIVE:+ ${DMC_UNARCHIVE}} "$1" ${2:+"${2}"} |
 		iconv -f "${DMC_ENCODING}" -t UTF-8 - |
-		sed -e 's/\o0//g'
+		sed -f <(SedArgs)
+}
+SedArgs(){
+	# Fix spaces in header
+	echo '1s/ /_/g'
+	# Fix mixed case in header
+	echo '1s/\(.*\)/\L\1/'
+	if [ -n "${DMC_FIXNULL:-}" ]; then
+		echo 's/\o0//g'
+	fi
+	if [ -n "${DMC_QUOTEQUOTE:-}" ]; then
+		echo 's/ \("[^",]*\)"/ "\1""/g'
+		# echo 's/\([A-Z]\)"\([A-Z]\)/\1'"'"'\2/g'
+		echo 's/\(\w\)"\(\w\)/\1'"'"'\2/g'
+	fi
 }
 Main "$@"
