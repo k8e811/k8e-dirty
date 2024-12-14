@@ -1,0 +1,10 @@
+#!/usr/bin/awk -f
+BEGIN{
+	format = ENVIRON["S3L_FORMAT"]
+	fsl["tabs"]="	"
+	fsl["csv"]=","
+	IFS=OFS=rsl[format]
+	tabs=(format == "tabs")
+}
+NR==1{ print; next }
+tabs && /"/ {print; next}
