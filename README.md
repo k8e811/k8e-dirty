@@ -6,7 +6,11 @@ Tools for dealing with dirty data sources (Like the dl.ncsbe.gov bucket)
 
 ### dmclean
 
-`[DMC_UNARCHIVE=unarchive] [DMC_ENCODING=encoding] dmclean file [part]`
+```sh
+[DMC_UNARCHIVE=unarchive] \
+[DMC_ENCODING=encoding] \
+[DMC_FORMAT=tabs|csv] \
+dmclean file [part]`
 
 * DMC\_UNARCHIVE is the unarchive command... 'unzip -p' is the default
 * EMC\_ENCODING is the "from" encoding for inconv... 'UTF-8' is the default
@@ -16,7 +20,6 @@ Tools for dealing with dirty data sources (Like the dl.ncsbe.gov bucket)
 ```sh
 [DMC_UNARCHIVE=unarchive] \
 [DMC_ENCODING=encoding] \
-[S3L_FORMAT=csv|tsv] \
 sqlite3load dbfile file [part]
 ```
 

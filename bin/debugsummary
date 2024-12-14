@@ -1,10 +1,11 @@
 #!/usr/bin/awk -f
 BEGIN{
-	format = ENVIRON["S3L_FORMAT"]
+	format = ENVIRON["DMC_FORMAT"]
+	tabs=(format == "tabs")
 	fsl["tabs"]="	"
 	fsl["csv"]=","
-	IFS=OFS=rsl[format]
-	tabs=(format == "tabs")
+	FS=fsl[format]
 }
-NR==1{ print; next }
+NR==1{ columns = NF; print; next }
+columns != NF {print; next}
 tabs && /"/ {print; next}
