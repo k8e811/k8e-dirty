@@ -12,12 +12,14 @@ NR == 1 {
 /"/{
 	delete cf
 	for (i=1; i<=NF; i++){
-		# '"KNYAZ BORIS" 78'
 		cf[i] = $i
+		# VR_Snapshot_20241105 has '"KNYAZ BORIS" 78'
 		if ($i ~ /^"/ && $i !~ /"$/) {
 			gsub("\"", "\"\"", cf[i])
 			cf[i] = "\"" cf[i] "\""
-		}
+		} else
+		# VR_Snapshot_20060210 voter_reg_num==000009458230 unit_num is '"'
+		if ($i == "\"") cf[i]=""
 	}
 	l = cf[1]
 	for (i=2; i<=NF; i++) 
