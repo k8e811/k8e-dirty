@@ -7,5 +7,4 @@ BEGIN{
 	FS=fsl[format]
 }
 NR==1{ columns = NF; print; next }
-columns != NF {print; next}
 tabs && /"/ {print; next}
