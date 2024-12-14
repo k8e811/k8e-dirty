@@ -1,0 +1,44 @@
+#!/bin/bash
+set -e -u -o pipefail
+: "${S3L_FORMAT:=tabs}"
+: "${S3L_SCHEMA:=load}"
+: "${S3L_SUFFIX:=}"
+: "${S3L_DEBUG:=}"
+: "${DMC_UNARCHIVE:=unzip -p}"
+: "${DMC_ENCODING:=UTF-8}"
+: "${DMC_FIXNULL:=}"
+: "${DMC_QUOTEQUOTE:=}"
+export S3L_FORMAT S3L_SCHEMA S3L_SUFFIX S3L_DEBUG DMC_UNARCHIVE DMC_ENCODING DMC_FIXNULL DMC_QUOTEQUOTE
+Main() {
+	local db="$1" rc=0
+	shift
+	sqlite3 "$db" -init <(Load "$@") ".exit" || rc="$?"
+	echo "$rc"
+	if [[ "$rc" -gt 0 ]] && [[ -n "${S3L_DEBUG}" ]]; then
+		DebugSummary "$@"
+	fi
+	return "$rc"
+}
+Load() {
+	local table
+	table="$(Table "$@")"
+	echo ".echo on"
+	echo ".mode ${S3L_FORMAT}"
+	# This breaks on filenames with spaces
+	echo ".import \"| dmclean $*\" $table"
+}
+Table() {
+	local file="$1" part="${2:-}"
+	local tf1="${file##*/}"
+	local tf2="${tf1%.*}"
+	local tp1="${part##*/}"
+	local tp2="${tp1%.*}"
+	local t1="${S3L_SCHEMA,,}.${tf2,,}${tp2:+_${tp2,,}}${S3L_SUFFIX:+_${S3L_SUFFIX}}"
+	echo "${t1}"
+}
+DebugSummary() {
+	local table
+	table="$(Table "$@")"
+	dmclean "$@" | debugsummary > "$table.${S3L_FORMAT}"
+}
+Main "$@"
