@@ -9,7 +9,7 @@ Main() {
 	# iconv will load the ENTIRE file into memory during conversion
 	# and sed will churn hard on files that don't need to be updated
 	# It's also ONLY needed ONCE per load of a file
-	SedArgs 1>&2
+	echo "$0: fixer is $DMC_FIX" 1>&2
 	${DMC_UNARCHIVE:+ ${DMC_UNARCHIVE}} "$1" ${2:+"${2}"} |
 		iconv -f "${DMC_ENCODING}" -t UTF-8 - |
 		"${DMC_FIX}"
