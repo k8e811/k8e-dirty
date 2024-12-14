@@ -22,6 +22,8 @@ Load() {
 	table="$(Table "$@")"
 	echo ".echo on"
 	echo ".mode ${DMC_FORMAT}"
+	# Quoting is needed due to the schema
+	echo "DROP TABLE IF EXISTS '$table';";
 	# This breaks on filenames with spaces
 	echo ".import \"| dmclean $*\" $table"
 }
