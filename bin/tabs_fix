@@ -1,0 +1,27 @@
+#!/usr/bin/awk -f
+BEGIN {
+	FS="	"
+	}
+NR == 1 {
+	l = tolower($0)
+	gsub(" ","_",l)
+	print l
+	next
+}
+!/"/{ print; next}
+/"/{
+	delete cf
+	for (i=1; i<=NF; i++){
+		# '"KNYAZ BORIS" 78'
+		cf[i] = $i
+		if ($i ~ /^"/ && $i !~ /"$/) {
+			gsub("\"", "\"\"", cf[i])
+			cf[i] = "\"" cf[i] "\""
+		}
+	}
+	l = cf[1]
+	for (i=2; i<=NF; i++) 
+		l = l FS cf[i]
+	print l
+	next
+}
