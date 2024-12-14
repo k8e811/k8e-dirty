@@ -6,5 +6,5 @@ BEGIN{
 	fsl["csv"]=","
 	FS=fsl[format]
 }
-NR==1{ columns = NF; print; next }
+NR==1||NR==2{ columns = NF; print; next }
 tabs && /"/ {print; next}
