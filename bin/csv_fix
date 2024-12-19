@@ -1,0 +1,13 @@
+#!/usr/bin/awk -f
+BEGIN {
+	FS=","
+}
+# Fix the Header
+NR == 1 {
+	l = tolower($0)
+	gsub(" ","_",l)
+	print l
+	next
+}
+# We assume all else is clean
+1
