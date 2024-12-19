@@ -1,0 +1,65 @@
+#!/bin/bash
+set -e -u -o pipefail
+zero="$(readlink -f "$0")"
+zerodir="${zero%/*}"
+PATH="$zerodir:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
+export DMC_FORMAT DMC_ENCODING DMC_UNARCHIVE S3L_DEBUG=1
+Main() {
+	local db="$1"; shift
+	local f
+	for f in "$@"; do
+		Handle "$db" "$f"
+	done
+}
+Handle() {
+	local parts=() p db="$1"
+	shift
+	readarray -t parts < <(GetParts "$1")
+	echo "$1" "${parts[@]}"
+	for p in "${parts[@]}"; do
+		case "$1 $p" in
+			# We lack a PDF to table parser
+			*.pdf) next;;
+			# We lack a vip XML parser.  Becomes separate files in 2017
+			*.xml) next;;
+			# We lack an XLS parser
+			*.xls) next;;
+			# Skip README files
+			*Readme.txt) next;;
+			# history_stats is not yet useful
+			*history_stats*) next;;
+			# voter_stats is not yet useful
+			*voter_stats*) next;;
+			*VR_Snapshot_200[567]*)
+				DMC_ENCODING=LATIN1;;
+			*VR_Snapshot_*)
+				DMC_ENCODING=UTF-16;;
+			*ncvoter*)
+				DMC_ENCODING=LATIN1;;
+			*)
+				DMC_ENCODING=UTF-8;;
+		esac
+		case "$1 $p" in
+			*.csv)
+				DMC_FORMAT=csv;;
+			*absentee*.txt)
+				DMC_FORMAT=csv;;
+			*vipFeed*)
+				DMC_FORMAT=csv;;
+			*)
+				DMC_FORMAT=tabs;;
+		esac
+		# Idea:  Grab a suffix from timestamp of archive element for ncvoter and ncvhis
+		case "$1" in
+			*.zip) DMC_UNARCHIVE="unzip -p" sqlite3load "$db" "$1" "$p" ;;
+			*) DMC_UNARCHIVE="cat" sqlite3load "$db" "$1" ;;
+		esac
+	done
+}
+GetParts() {
+	case "$1" in
+		*.zip) unzip -l "$1" | awk '/^---/{p=!p;next}p{print $NF}' ;;
+		*) echo "$1" ;;
+	esac
+}
+Main "$@"
