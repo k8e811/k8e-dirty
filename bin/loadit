@@ -3,7 +3,7 @@ set -e -u -o pipefail
 zero="$(readlink -f "$0")"
 zerodir="${zero%/*}"
 PATH="$zerodir:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
-export DMC_FORMAT DMC_ENCODING DMC_UNARCHIVE S3L_DEBUG=1
+export DMC_FIX DMC_FORMAT DMC_ENCODING DMC_UNARCHIVE S3L_DEBUG=1
 Main() {
 	local db="$1"; shift
 	local f
@@ -48,6 +48,14 @@ Handle() {
 				DMC_FORMAT=csv;;
 			*)
 				DMC_FORMAT=tabs;;
+		esac
+		case "$1 $p" in
+			*ncvoter*)
+				DMC_FIX="${DMC_FORMAT}_ncv_fix" ;;
+			*ncvhis*)
+				DMC_FIX="${DMC_FORMAT}_ncv_fix" ;;
+			*)
+				DMC_FIX="${DMC_FORMAT}_fix" ;;
 		esac
 		# Idea:  Grab a suffix from timestamp of archive element for ncvoter and ncvhis
 		case "$1" in
