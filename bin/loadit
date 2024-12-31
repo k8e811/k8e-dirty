@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e -u -o pipefail
+# set -x
 zero="$(readlink -f "$0")"
 zerodir="${zero%/*}"
 PATH="$zerodir:$HOME/bin:/usr/local/bin:/usr/bin:/bin"

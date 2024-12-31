@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e -u -o pipefail
+#set -x
 : "${DMC_FORMAT:=tabs}"
 : "${S3L_SCHEMA:=load}"
 : "${S3L_SUFFIX:=}"
@@ -8,9 +9,9 @@ set -e -u -o pipefail
 : "${DMC_ENCODING:=UTF-8}"
 export DMC_FORMAT S3L_SCHEMA S3L_SUFFIX S3L_DEBUG DMC_UNARCHIVE DMC_ENCODING DMC_FIXNULL DMC_QUOTEQUOTE
 Main() {
-	local db="$1" rc=0
-	shift
-	sqlite3 "$db" -init <(Load "$@") ".exit" || rc="$?"
+	local db="$1" file="$2" part="${3:-}" rc=0
+	Load "$file" "$part" 1>&2
+	sqlite3 "$db" -init <(Load "$file" "$part") ".exit" || rc="$?"
 	echo "$rc"
 	if [[ "$rc" -gt 0 ]] && [[ -n "${S3L_DEBUG}" ]]; then
 		DebugSummary "$@"
@@ -18,22 +19,24 @@ Main() {
 	return "$rc"
 }
 Load() {
-	local table
-	table="$(Table "$@")"
+	local table file="$1" part="${2:-}"
+	table="$(Table "$file" "$part")"
 	echo ".echo on"
 	echo ".mode ${DMC_FORMAT}"
 	# Quoting is needed due to the schema
 	echo "DROP TABLE IF EXISTS '$table';";
 	# This breaks on filenames with spaces
-	echo ".import \"| dmclean $*\" $table"
+	echo ".import \"| dmclean '$file'${part:+ \'$part\'}\" $table"
 }
 Table() {
 	local file="$1" part="${2:-}"
 	local tf1="${file##*/}"
 	local tf2="${tf1%.*}"
+	local tf3="${tf2//-/_}"
 	local tp1="${part##*/}"
 	local tp2="${tp1%.*}"
-	local t1="${S3L_SCHEMA,,}.${tf2,,}${tp2:+_${tp2,,}}${S3L_SUFFIX:+_${S3L_SUFFIX}}"
+	local tp3="${tp2//-/_}"
+	local t1="${S3L_SCHEMA,,}.${tf3,,}${tp3:+_${tp3,,}}${S3L_SUFFIX:+_${S3L_SUFFIX}}"
 	echo "${t1}"
 }
 DebugSummary() {
