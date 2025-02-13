@@ -29,15 +29,23 @@ Load() {
 	echo ".import \"| dmclean '$file'${part:+ \'$part\'}\" $table"
 }
 Table() {
-	local file="$1" part="${2:-}"
-	local tf1="${file##*/}"
-	local tf2="${tf1%.*}"
-	local tf3="${tf2//-/_}"
-	local tp1="${part##*/}"
-	local tp2="${tp1%.*}"
-	local tp3="${tp2//-/_}"
-	local t1="${S3L_SCHEMA,,}${tf3,,}${tp3:+_${tp3,,}}${S3L_SUFFIX:+_${S3L_SUFFIX}}"
-	echo "${t1}"
+	local file="$1" part="${2:-}" cfile='' cpart='' base=''
+	cfile=$(CleanName "$file")
+	cpart=$(CleanName "$part")
+	if [ -n "$cpart" ] && [ "${cfile/$cpart/}" != "${cfile}" ]; then
+		base="$cfile"
+	else
+		base="${cfile}_${cpart}"
+	fi
+	echo "${S3L_SCHEMA,,}$base${S3L_SUFFIX:+_${S3L_SUFFIX,,}}"
+}
+CleanName() {
+	local name="$1"
+	local basename="${name##*/}"
+	local noext="${basename%.*}"
+	local nospecial="${noext//[-_ ]/}"
+	local lower="${nospecial,,}"
+	echo "$lower"
 }
 DebugSummary() {
 	local table
