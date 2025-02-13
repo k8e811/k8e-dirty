@@ -2,7 +2,7 @@
 set -e -u -o pipefail
 #set -x
 : "${DMC_FORMAT:=tabs}"
-: "${S3L_SCHEMA:=load}"
+: "${S3L_SCHEMA:=l_}"
 : "${S3L_SUFFIX:=}"
 : "${S3L_DEBUG:=}"
 : "${DMC_UNARCHIVE:=unzip -p}"
@@ -36,7 +36,7 @@ Table() {
 	local tp1="${part##*/}"
 	local tp2="${tp1%.*}"
 	local tp3="${tp2//-/_}"
-	local t1="${S3L_SCHEMA,,}.${tf3,,}${tp3:+_${tp3,,}}${S3L_SUFFIX:+_${S3L_SUFFIX}}"
+	local t1="${S3L_SCHEMA,,}${tf3,,}${tp3:+_${tp3,,}}${S3L_SUFFIX:+_${S3L_SUFFIX}}"
 	echo "${t1}"
 }
 DebugSummary() {
