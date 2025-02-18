@@ -5,6 +5,7 @@ set -e -u -o pipefail
 : "${DMC_ENCODING:=UTF-8}" Input encoding
 : "${DMC_FORMAT:=tabs}" tabs or csv
 : "${DMC_FIX:=${DMC_FORMAT}_fix}" And the fixer script
+: "${DMC_RECORDS:=-0}" Have a limit on the records
 Main() {
 	local file="$1" part="${2:-}"
 	# This is not memory nor CPU efficient
@@ -15,6 +16,7 @@ Main() {
 	echo "$0: file is '$file' part is '$part'" 1>&2
 	${DMC_UNARCHIVE:+ ${DMC_UNARCHIVE}} "$file"${part:+ "${part}"} |
 		iconv -f "${DMC_ENCODING}" -t UTF-8 - |
-		"${DMC_FIX}"
-}
+		"${DMC_FIX}" |
+		head --lines="${DMC_RECORDS}"
+} 
 Main "$@"
