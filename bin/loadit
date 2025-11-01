@@ -37,6 +37,8 @@ Handle() {
 				DMC_ENCODING=UTF-16;;
 			*ncvoter*)
 				DMC_ENCODING=LATIN1;;
+			*Candidate_?isting_*)
+				DMC_ENCODING=LATIN1;;
 			*)
 				DMC_ENCODING=UTF-8;;
 		esac
