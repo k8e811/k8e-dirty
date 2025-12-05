@@ -32,7 +32,7 @@ Table() {
 	local file="$1" part="${2:-}" cfile='' cpart='' base=''
 	cfile=$(CleanName "$file")
 	cpart=$(CleanName "$part")
-	if [ -n "$cpart" ] && [ "${cfile/$cpart/}" != "${cfile}" ]; then
+	if [ -z "$cpart" ] || [ "${cfile/$cpart/}" != "${cfile}" ]; then
 		base="$cfile"
 	else
 		base="${cfile}_${cpart}"
