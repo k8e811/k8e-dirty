@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e -u -o pipefail
-# set -x
+set -x
 zero="$(readlink -f "$0")"
 zerodir="${zero%/*}"
 PATH="$zerodir:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
@@ -13,11 +13,12 @@ Main() {
 	done
 }
 Handle() {
-	local parts=() p db="$1"
+	local parts=() p db="$1" view
 	shift
 	readarray -t parts < <(GetParts "$1")
 	echo "$1" "${parts[@]}"
 	for p in "${parts[@]}"; do
+		# DMC_ENCODING
 		case "$1 $p" in
 			# We lack a PDF to table parser
 			*.pdf) next;;
@@ -42,6 +43,7 @@ Handle() {
 			*)
 				DMC_ENCODING=UTF-8;;
 		esac
+		# DMC_FORMAT
 		case "$1 $p" in
 			*.csv)
 				DMC_FORMAT=csv;;
@@ -52,6 +54,7 @@ Handle() {
 			*)
 				DMC_FORMAT=tabs;;
 		esac
+		# DMC_FIX
 		case "$1 $p" in
 			*ncvoter*)
 				DMC_FIX="${DMC_FORMAT}_ncv_fix" ;;
@@ -60,10 +63,24 @@ Handle() {
 			*)
 				DMC_FIX="${DMC_FORMAT}_fix" ;;
 		esac
+		# view
+		case "$1 $p" in
+			*ncvoter*)
+				view="voter" ;;
+			*ncvhis*)
+				view="vhis" ;;
+			*[Ss]napshot*)
+				view="snapshot" ;;
+			*[Cc]andidate*)
+				view="candidate" ;;
+			*)
+				view=""
+		esac
+
 		# Idea:  Grab a suffix from timestamp of archive element for ncvoter and ncvhis
 		case "$1" in
-			*.zip) DMC_UNARCHIVE="unzip -p" sqlite3load "$db" "$1" "$p" ;;
-			*) DMC_UNARCHIVE="cat" sqlite3load "$db" "$1" ;;
+			*.zip) DMC_UNARCHIVE="unzip -p" sqlite3load "$db" "$1" "$p" "$view";;
+			*) DMC_UNARCHIVE="cat" sqlite3load "$db" "$1" "" "$view";;
 		esac
 	done
 }
