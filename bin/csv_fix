@@ -5,6 +5,9 @@ BEGIN {
 # Fix the Header
 NR == 1 {
 	l = tolower($0)
+	# 20260218 found bom issue in candidate csv
+	# /home/seshat/p/2026-strategy/analytics/../k8e-dirty/bin/dmclean
+	sub(/^ï»¿/,"",l)
 	gsub(" ","_",l)
 	print l
 	next
