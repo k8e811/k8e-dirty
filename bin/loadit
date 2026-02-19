@@ -63,24 +63,10 @@ Handle() {
 			*)
 				DMC_FIX="${DMC_FORMAT}_fix" ;;
 		esac
-		# view
-		case "$1 $p" in
-			*ncvoter*)
-				view="voter" ;;
-			*ncvhis*)
-				view="vhis" ;;
-			*[Ss]napshot*)
-				view="snapshot" ;;
-			*[Cc]andidate*)
-				view="candidate" ;;
-			*)
-				view=""
-		esac
-
 		# Idea:  Grab a suffix from timestamp of archive element for ncvoter and ncvhis
 		case "$1" in
-			*.zip) DMC_UNARCHIVE="unzip -p" sqlite3load "$db" "$1" "$p" "$view";;
-			*) DMC_UNARCHIVE="cat" sqlite3load "$db" "$1" "" "$view";;
+			*.zip) DMC_UNARCHIVE="unzip -p" sqlite3load "$db" "$1" "$p";;
+			*) DMC_UNARCHIVE="cat" sqlite3load "$db" "$1" "";;
 		esac
 	done
 }

@@ -9,9 +9,9 @@ set -e -u -o pipefail
 : "${DMC_ENCODING:=UTF-8}"
 export DMC_FORMAT S3L_SCHEMA S3L_SUFFIX S3L_DEBUG DMC_UNARCHIVE DMC_ENCODING DMC_FIXNULL DMC_QUOTEQUOTE
 Main() {
-	local db="$1" file="$2" part="${3:-}" view="${4:-}" rc=0
+	local db="$1" file="$2" part="${3:-}" rc=0
 	Load "$file" "$part" 1>&2
-	sqlite3 "$db" -init <(Load "$file" "$part" "$view") ".exit" || rc="$?"
+	sqlite3 "$db" -init <(Load "$file" "$part") ".exit" || rc="$?"
 	echo "$rc"
 	if [[ "$rc" -gt 0 ]] && [[ -n "${S3L_DEBUG}" ]]; then
 		DebugSummary "$@"
@@ -19,7 +19,7 @@ Main() {
 	return "$rc"
 }
 Load() {
-	local table file="$1" part="${2:-}" view="${3:-}"
+	local table file="$1" part="${2:-}"
 	table="$(Table "$file" "$part")"
 	echo ".echo on"
 	echo ".changes on"
@@ -29,10 +29,6 @@ Load() {
 	echo "DROP TABLE IF EXISTS '$table';";
 	# This breaks on filenames with spaces
 	echo ".import \"| dmclean '$file'${part:+ \'$part\'}\" $table"
-	if [ -n "$view" ]; then
-		echo "DROP VIEW IF EXISTS $view;"
-		echo "CREATE VIEW $view as select * from $table;"
-	fi
 }
 Table() {
 	local file="$1" part="${2:-}" cfile='' cpart='' base=''
