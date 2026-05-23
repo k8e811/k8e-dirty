@@ -8,6 +8,7 @@ NR == 1 {
 	print l
 	next
 }
+{gsub(/ +\t/, "	", $0); gsub(/ _$/, "", $0) }
 !/"/{ print; next}
 /"/{
 	delete cf
